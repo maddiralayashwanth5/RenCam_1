@@ -1,52 +1,15 @@
-import { neon } from "@neondatabase/serverless"
-import { Pool } from "pg"
+// Mock database - no real database needed!
+import { query as mockQuery, queryOne as mockQueryOne } from './mock-db'
 
-// Detect if using Neon or local PostgreSQL
-const isNeon = process.env.DATABASE_URL?.includes('neon.tech')
-
-let sql: any
-let pool: Pool | null = null
-
-if (isNeon) {
-  // Use Neon serverless driver
-  sql = neon(process.env.DATABASE_URL!)
-} else {
-  // Use standard pg for local PostgreSQL
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  })
-  
-  // Create a neon-like interface for compatibility
-  sql = async (query: string, params?: any[]) => {
-    const client = await pool!.connect()
-    try {
-      const result = await client.query(query, params)
-      return result.rows
-    } finally {
-      client.release()
-    }
-  }
+export async function query<T = any>(text: string, params: any[] = []): Promise<T[]> {
+  console.log("[Mock DB] Query:", text.substring(0, 80), "...", params ? `(${params.length} params)` : "(no params)")
+  const result = await mockQuery<T>(text, params)
+  console.log("[Mock DB] Query result:", result.length, "rows")
+  return result
 }
 
-// Low-level query execution
-export async function query<T = unknown>(text: string, values?: unknown[]): Promise<T[]> {
-  try {
-    console.log("[DB] Query:", text.substring(0, 80), "...", values ? `(${values.length} params)` : "(no params)")
-
-    const result = await sql(text, values || [])
-
-    console.log("[DB] Query result:", result.length, "rows")
-    return result as T[]
-  } catch (error) {
-    const err = error as any
-    console.error("[v0] Query error:", err?.message || error)
-    throw error
-  }
-}
-
-export async function queryOne<T = unknown>(text: string, values?: unknown[]): Promise<T | null> {
-  const results = await query<T>(text, values)
-  return results.length > 0 ? results[0] : null
+export async function queryOne<T = any>(text: string, params: any[] = []): Promise<T | null> {
+  return mockQueryOne<T>(text, params)
 }
 
 // Database error helpers
