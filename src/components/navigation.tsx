@@ -1,23 +1,23 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+// import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
 import { LogOut, RefreshCw } from "lucide-react"
 
 export default function Navigation() {
-  const pathname = usePathname()
-  const router = useRouter()
+  // const pathname = usePathname()
+  // const router = useRouter()
   const { user, logout } = useAuth()
 
   const handleLogout = async () => {
     await logout()
-    router.push("/")
+    // router.push("/")
   }
 
   const handleSwitchRole = () => {
-    router.push("/")
+    // router.push("/")
   }
 
   return (

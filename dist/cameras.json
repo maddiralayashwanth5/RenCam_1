@@ -1,0 +1,74 @@
+[
+  {
+    "id": "cam-1",
+    "name": "Canon EOS R5",
+    "category": "mirrorless",
+    "price_per_day": 85,
+    "rating": 4.8,
+    "reviews": 24,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-2",
+    "name": "Nikon Z9",
+    "category": "mirrorless",
+    "price_per_day": 95,
+    "rating": 4.9,
+    "reviews": 18,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-3",
+    "name": "Sony A7R V",
+    "category": "mirrorless",
+    "price_per_day": 75,
+    "rating": 4.7,
+    "reviews": 32,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-4",
+    "name": "Canon 5D Mark IV",
+    "category": "dslr",
+    "price_per_day": 65,
+    "rating": 4.6,
+    "reviews": 45,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-5",
+    "name": "GoPro Hero 12",
+    "category": "action",
+    "price_per_day": 25,
+    "rating": 4.6,
+    "reviews": 56,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-6",
+    "name": "DJI Mavic 3",
+    "category": "drone",
+    "price_per_day": 120,
+    "rating": 4.9,
+    "reviews": 28,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-7",
+    "name": "Fujifilm X-T5",
+    "category": "mirrorless",
+    "price_per_day": 70,
+    "rating": 4.8,
+    "reviews": 22,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  },
+  {
+    "id": "cam-8",
+    "name": "DJI Mini 3 Pro",
+    "category": "drone",
+    "price_per_day": 60,
+    "rating": 4.7,
+    "reviews": 41,
+    "image_url": "/placeholder.svg?height=400&width=400"
+  }
+]

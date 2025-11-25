@@ -1,56 +1,34 @@
-"use client"
-
-import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 
 interface BookingCalendarProps {
-  cameraId: string
-  pricePerDay: number
-  selectedDates: { from: Date | undefined; to: Date | undefined }
-  onDatesChange: (dates: { from: Date | undefined; to: Date | undefined }) => void
+  selectedDates: { from: Date | null; to: Date | null }
+  onDatesChange: (dates: { from: Date | null; to: Date | null }) => void
 }
 
-export default function BookingCalendar({ cameraId, pricePerDay, selectedDates, onDatesChange }: BookingCalendarProps) {
-  const [month, setMonth] = useState<Date>(new Date())
-
-  const handleDateClick = (date: Date) => {
-    if (!selectedDates.from) {
-      onDatesChange({ from: date, to: undefined })
-    } else if (!selectedDates.to && date > selectedDates.from) {
-      onDatesChange({ from: selectedDates.from, to: date })
-    } else {
-      onDatesChange({ from: date, to: undefined })
-    }
-  }
-
+export default function BookingCalendar({ selectedDates, onDatesChange }: BookingCalendarProps) {
   return (
-    <Card className="p-6">
-      <h3 className="font-bold text-lg mb-4">Select Dates</h3>
-
-      <div className="mb-6 flex justify-center">
-        <Calendar
-          mode="range"
-          selected={{
-            from: selectedDates.from,
-            to: selectedDates.to,
-          }}
-          onSelect={(range: any) => {
+    <Card className="p-4">
+      <h3 className="font-semibold mb-4">Select Dates</h3>
+      <Calendar
+        mode="range"
+        selected={{
+          from: selectedDates.from || undefined,
+          to: selectedDates.to || undefined,
+        }}
+        onSelect={(range) => {
+          if (range) {
             onDatesChange({
-              from: range?.from,
-              to: range?.to,
+              from: range.from || null,
+              to: range.to || null,
             })
-          }}
-          disabled={(date) => {
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-            return date < today
-          }}
-        />
-      </div>
-
+          }
+        }}
+        disabled={(date) => date < new Date()}
+        className="rounded-md border"
+      />
       {selectedDates.from && selectedDates.to && (
-        <div className="space-y-3">
+        <div className="mt-4 space-y-3">
           <div className="p-3 bg-primary/10 rounded-lg">
             <p className="text-sm text-muted-foreground mb-1">Booking Period</p>
             <p className="font-semibold">
