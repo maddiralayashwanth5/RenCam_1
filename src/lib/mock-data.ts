@@ -223,6 +223,51 @@ export const mockBookings = [
     pickup_otp: "123456",
     return_otp: "654321",
     created_at: "2024-11-23T00:00:00Z"
+  },
+  {
+    id: "booking-4",
+    camera_id: "cam-4",
+    renter_id: "renter-1",
+    lender_id: "lender-1", 
+    pickup_date: "2024-11-28",
+    return_date: "2024-11-30",
+    status: "request_approved" as const,
+    total_price: 5200,
+    platform_fee: 520,
+    tax: 260,
+    pickup_otp: "123456",
+    return_otp: "654321",
+    created_at: "2024-11-26T00:00:00Z"
+  },
+  {
+    id: "booking-5",
+    camera_id: "cam-5",
+    renter_id: "renter-1",
+    lender_id: "lender-1", 
+    pickup_date: "2024-11-15",
+    return_date: "2024-11-17",
+    status: "request_rejected" as const,
+    total_price: 2800,
+    platform_fee: 280,
+    tax: 140,
+    pickup_otp: "123456",
+    return_otp: "654321",
+    created_at: "2024-11-13T00:00:00Z"
+  },
+  {
+    id: "booking-6",
+    camera_id: "cam-6",
+    renter_id: "renter-1",
+    lender_id: "lender-1", 
+    pickup_date: "2024-11-10",
+    return_date: "2024-11-12",
+    status: "cancelled" as const,
+    total_price: 4000,
+    platform_fee: 400,
+    tax: 200,
+    pickup_otp: "123456",
+    return_otp: "654321",
+    created_at: "2024-11-08T00:00:00Z"
   }
 ]
 

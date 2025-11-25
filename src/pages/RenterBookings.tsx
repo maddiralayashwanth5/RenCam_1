@@ -25,7 +25,7 @@ import { toast } from "sonner"
 export default function RenterBookings() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState("pending")
+  const [activeTab, setActiveTab] = useState("requests")
   const [otpDialogOpen, setOtpDialogOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
   const [otpType, setOtpType] = useState<'pickup' | 'return'>('pickup')
@@ -34,9 +34,16 @@ export default function RenterBookings() {
 
   // Filter bookings for current renter
   const renterBookings = mockBookings.filter(b => b.renter_id === user?.id)
-  const pendingBookings = renterBookings.filter(b => ['request_pending', 'request_approved'].includes(b.status))
+  const pendingRequests = renterBookings.filter(b => b.status === 'request_pending')
+  const approvedRequests = renterBookings.filter(b => b.status === 'request_approved')
   const activeBookings = renterBookings.filter(b => ['confirmed', 'pickup_verified'].includes(b.status))
   const completedBookings = renterBookings.filter(b => b.status === 'completed')
+  const rejectedBookings = renterBookings.filter(b => b.status === 'request_rejected')
+  const cancelledBookings = renterBookings.filter(b => b.status === 'cancelled')
+  
+  // Combine all past bookings
+  const pastBookings = [...completedBookings, ...rejectedBookings, ...cancelledBookings]
+  const allRequests = [...pendingRequests, ...approvedRequests, ...rejectedBookings]
   
   const handleOtpVerification = async () => {
     if (!otp || otp.length !== 6) {
@@ -76,14 +83,16 @@ export default function RenterBookings() {
     switch (status) {
       case 'request_pending': return 'bg-yellow-100 text-yellow-800'
       case 'request_approved': return 'bg-blue-100 text-blue-800'
+      case 'request_rejected': return 'bg-red-100 text-red-800'
       case 'confirmed': return 'bg-green-100 text-green-800'
       case 'pickup_verified': return 'bg-purple-100 text-purple-800'
-      case 'completed': return 'bg-gray-100 text-gray-800'
+      case 'completed': return 'bg-emerald-100 text-emerald-800'
+      case 'cancelled': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
-  const BookingCard = ({ booking, showActions = true }: { booking: any, showActions?: boolean }) => {
+  const BookingCard = ({ booking, showActions = true, showRating = false }: { booking: any, showActions?: boolean, showRating?: boolean }) => {
     const camera = mockCameras.find(c => c.id === booking.camera_id)
     const lender = mockUsers.find(u => u.id === booking.lender_id)
     
@@ -164,12 +173,32 @@ export default function RenterBookings() {
                     Waiting for Approval
                   </Button>
                 )}
+                {booking.status === 'request_approved' && (
+                  <Button variant="outline" disabled>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approved - Awaiting Confirmation
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   onClick={() => navigate(`/camera/${camera?.id}`)}
                 >
                   View Camera
                 </Button>
+              </div>
+            )}
+            
+            {showRating && booking.status === 'completed' && (
+              <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Rental Completed Successfully</p>
+                    <p className="text-xs text-green-600">How was your experience?</p>
+                  </div>
+                  <Button size="sm" variant="outline" className="text-green-700 border-green-300">
+                    Rate & Review
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -201,15 +230,15 @@ export default function RenterBookings() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats Overview */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="p-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-yellow-100 rounded-lg">
                 <Clock className="w-6 h-6 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">{pendingBookings.length}</p>
+                <p className="text-sm text-muted-foreground">Requests</p>
+                <p className="text-2xl font-bold">{allRequests.length}</p>
               </div>
             </div>
           </Card>
@@ -226,8 +255,8 @@ export default function RenterBookings() {
           </Card>
           <Card className="p-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-gray-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-gray-600" />
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Completed</p>
@@ -235,27 +264,81 @@ export default function RenterBookings() {
               </div>
             </div>
           </Card>
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gray-100 rounded-lg">
+                <Calendar className="w-6 h-6 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{renterBookings.length}</p>
+              </div>
+            </div>
+          </Card>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="pending">Pending ({pendingBookings.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="requests">Requests ({allRequests.length})</TabsTrigger>
             <TabsTrigger value="active">Active ({activeBookings.length})</TabsTrigger>
             <TabsTrigger value="completed">Completed ({completedBookings.length})</TabsTrigger>
+            <TabsTrigger value="past">Past ({pastBookings.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="space-y-4">
-            {pendingBookings.length === 0 ? (
+          <TabsContent value="requests" className="space-y-4">
+            {allRequests.length === 0 ? (
               <Card className="p-8 text-center">
                 <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h4 className="font-semibold mb-2">No pending bookings</h4>
+                <h4 className="font-semibold mb-2">No booking requests</h4>
                 <p className="text-muted-foreground mb-4">Your booking requests will appear here</p>
                 <Button onClick={() => navigate('/browse')}>Browse Cameras</Button>
               </Card>
             ) : (
-              pendingBookings.map((booking, index) => (
-                <BookingCard key={index} booking={booking} />
-              ))
+              <div className="space-y-6">
+                {pendingRequests.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-yellow-600" />
+                      Pending Approval ({pendingRequests.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {pendingRequests.map((booking, index) => (
+                        <BookingCard key={`pending-${index}`} booking={booking} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {approvedRequests.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      Approved Requests ({approvedRequests.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {approvedRequests.map((booking, index) => (
+                        <BookingCard key={`approved-${index}`} booking={booking} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {rejectedBookings.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                        <span className="w-2 h-2 bg-red-600 rounded-full"></span>
+                      </span>
+                      Rejected Requests ({rejectedBookings.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {rejectedBookings.map((booking, index) => (
+                        <BookingCard key={`rejected-${index}`} booking={booking} showActions={false} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </TabsContent>
 
@@ -279,12 +362,78 @@ export default function RenterBookings() {
               <Card className="p-8 text-center">
                 <CheckCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <h4 className="font-semibold mb-2">No completed bookings</h4>
-                <p className="text-muted-foreground">Your rental history will appear here</p>
+                <p className="text-muted-foreground mb-4">Your completed rentals will appear here</p>
+                <Button onClick={() => navigate('/browse')}>Browse Cameras</Button>
               </Card>
             ) : (
-              completedBookings.map((booking, index) => (
-                <BookingCard key={index} booking={booking} showActions={false} />
-              ))
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Successfully Completed Rentals</h3>
+                  <Badge variant="secondary">{completedBookings.length} rentals</Badge>
+                </div>
+                {completedBookings.map((booking, index) => (
+                  <BookingCard key={index} booking={booking} showActions={false} showRating={true} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="past" className="space-y-4">
+            {pastBookings.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h4 className="font-semibold mb-2">No past bookings</h4>
+                <p className="text-muted-foreground mb-4">Your booking history will appear here</p>
+                <Button onClick={() => navigate('/browse')}>Browse Cameras</Button>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {completedBookings.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      Completed Rentals ({completedBookings.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {completedBookings.map((booking, index) => (
+                        <BookingCard key={`completed-${index}`} booking={booking} showActions={false} showRating={true} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {rejectedBookings.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                        <span className="w-2 h-2 bg-red-600 rounded-full"></span>
+                      </span>
+                      Rejected Requests ({rejectedBookings.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {rejectedBookings.map((booking, index) => (
+                        <BookingCard key={`rejected-past-${index}`} booking={booking} showActions={false} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {cancelledBookings.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <span className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <span className="w-2 h-2 bg-gray-600 rounded-full"></span>
+                      </span>
+                      Cancelled Bookings ({cancelledBookings.length})
+                    </h3>
+                    <div className="space-y-4">
+                      {cancelledBookings.map((booking, index) => (
+                        <BookingCard key={`cancelled-${index}`} booking={booking} showActions={false} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </TabsContent>
         </Tabs>
